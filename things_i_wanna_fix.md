@@ -1,0 +1,2 @@
+- slider shouldn't be 0 to 100, there should be 2-3 rotations in its span
+- if you use slider, the flower should have some inertia 
