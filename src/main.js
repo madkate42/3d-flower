@@ -16,9 +16,10 @@ import {
 const BUTTONS = [
   { id: 'btn1', position: [1.3, -0.2, -0.07], url: 'https://example.com/1', label: 'About' },
   { id: 'btn2', position: [-1.5, 0.8, -0.75], url: 'https://example.com/2', label: 'Projects' },
-  { id: 'btn3', position: [0.5, 1.8, 0.5], url: 'https://example.com/3', label: 'Contact', lineUp: true },
+  { id: 'btn3', position: [0.45, 1.8, 0.44], url: 'https://example.com/3', label: 'Contact', lineUp: true },
   { id: 'btn4', position: [-0.3, 0, 1.65], url: 'https://github.com/madkate42', label: 'GitHub' },
   { id: 'btn5', position: [-0.35, 0.55, 1.25], url: 'https://example.com/4', label: 'Resume', lineUp: true },
+  { id: 'btn6', position: [1, 1.4, 0.87], url: 'https://www.linkedin.com/in/kbondarenko42/', label: 'LinkedIn', lineUp: true },
 ];
 
 // Scene setup
