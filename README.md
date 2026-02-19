@@ -1,4 +1,5 @@
 `npm install`
+
 `npm run dev`
 
 but download the `.glb` and place it to `public/model/flower.glb`:
