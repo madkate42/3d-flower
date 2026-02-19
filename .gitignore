@@ -1,3 +1,4 @@
 node_modules
 public/model/flower.glb
 .vercel
+.env*.local
