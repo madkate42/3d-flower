@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import {
   createCyberLabel3D,
@@ -74,6 +75,8 @@ const mouse = new THREE.Vector2();
 
 // Store references
 let flowerModel = null;
+let lowPolyModel = null;
+let isTransitioning = false;
 const clickableButtons = [];
 
 // Parent group for flower + buttons (so they rotate together)
@@ -112,42 +115,146 @@ BUTTONS.forEach((config) => {
   createCyberLabel3D(config, button, scene);
 });
 
-// Load the GLB model
+// Setup loaders with Draco support
+const dracoLoader = new DRACOLoader();
+dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
+
 const loader = new GLTFLoader();
+loader.setDRACOLoader(dracoLoader);
 
+// Helper function to setup a loaded model
+function setupModel(model) {
+  // Hide the cube (Object_04)
+  const cube = model.getObjectByName('Object_4');
+  if (cube) cube.visible = false;
+
+  // Rotate model upright
+  model.rotation.y = 0.4;
+  model.rotation.z = -Math.PI / 2 - 0.1;
+
+  // Center the model
+  const box = new THREE.Box3().setFromObject(model);
+  const center = box.getCenter(new THREE.Vector3());
+  model.position.sub(center);
+
+  // Scale to fit view
+  const size = box.getSize(new THREE.Vector3());
+  const maxDim = Math.max(size.x, size.y, size.z);
+  const scale = 6 / maxDim;
+  model.scale.setScalar(scale);
+}
+
+// Set material opacity for all meshes in a model
+function setModelOpacity(model, opacity) {
+  model.traverse((child) => {
+    if (child.isMesh && child.material) {
+      const materials = Array.isArray(child.material) ? child.material : [child.material];
+      materials.forEach((mat) => {
+        mat.transparent = true;
+        mat.opacity = opacity;
+      });
+    }
+  });
+}
+
+// Cross-fade transition from low-poly to high-poly
+function crossFadeToHighPoly() {
+  if (!lowPolyModel || !flowerModel) return;
+
+  isTransitioning = true;
+  const duration = 800; // ms
+  const startTime = performance.now();
+
+  // Start high-poly fully transparent
+  setModelOpacity(flowerModel, 0);
+  flowerModel.visible = true;
+
+  function animateTransition() {
+    const elapsed = performance.now() - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+
+    // Ease-in-out curve
+    const eased = progress < 0.5
+      ? 2 * progress * progress
+      : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+
+    setModelOpacity(lowPolyModel, 1 - eased);
+    setModelOpacity(flowerModel, eased);
+
+    if (progress < 1) {
+      requestAnimationFrame(animateTransition);
+    } else {
+      // Cleanup: remove low-poly model
+      flowerGroup.remove(lowPolyModel);
+      lowPolyModel.traverse((child) => {
+        if (child.geometry) child.geometry.dispose();
+        if (child.material) {
+          const materials = Array.isArray(child.material) ? child.material : [child.material];
+          materials.forEach((m) => m.dispose());
+        }
+      });
+      lowPolyModel = null;
+      isTransitioning = false;
+
+      // Reset opacity to non-transparent for performance
+      flowerModel.traverse((child) => {
+        if (child.isMesh && child.material) {
+          const materials = Array.isArray(child.material) ? child.material : [child.material];
+          materials.forEach((mat) => {
+            mat.transparent = false;
+            mat.opacity = 1;
+          });
+        }
+      });
+
+      console.log('High-quality model loaded!');
+    }
+  }
+
+  requestAnimationFrame(animateTransition);
+}
+
+// Stage 1: Load low-poly model first (fast, ~600KB)
 loader.load(
-  '/model/flower.glb',
+  '/model/flower-lowpoly.glb',
   (gltf) => {
-    flowerModel = gltf.scene;
-    flowerGroup.add(flowerModel);
+    lowPolyModel = gltf.scene;
+    flowerGroup.add(lowPolyModel);
+    setupModel(lowPolyModel);
+    console.log('Low-poly preview loaded, loading high-quality model...');
 
-    // Hide the cube (Object_04)
-    const cube = flowerModel.getObjectByName('Object_4');
-    if (cube) cube.visible = false;
+    // Stage 2: Start loading high-poly model in background
+    loader.load(
+      '/model/flower.glb',
+      (gltf) => {
+        flowerModel = gltf.scene;
+        flowerGroup.add(flowerModel);
+        setupModel(flowerModel);
+        flowerModel.visible = false; // Hide until transition
 
-    // Rotate model upright
-    flowerModel.rotation.y = 0.4;
-    flowerModel.rotation.z = -Math.PI / 2 - 0.1;
-
-    // Center the model
-    const box = new THREE.Box3().setFromObject(flowerModel);
-    const center = box.getCenter(new THREE.Vector3());
-    flowerModel.position.sub(center);
-
-    // Scale to fit view
-    const size = box.getSize(new THREE.Vector3());
-    const maxDim = Math.max(size.x, size.y, size.z);
-    const scale = 6 / maxDim;
-    flowerModel.scale.setScalar(scale);
-
-    console.log('Model loaded! Adjust button positions in BUTTONS config.');
+        // Start cross-fade transition
+        crossFadeToHighPoly();
+      },
+      (progress) => {
+        if (progress.total > 0) {
+          const percent = (progress.loaded / progress.total) * 100;
+          console.log(`Loading high-quality: ${percent.toFixed(1)}%`);
+        }
+      },
+      (error) => {
+        console.error('Error loading high-quality model:', error);
+      }
+    );
   },
-  (progress) => {
-    const percent = (progress.loaded / progress.total) * 100;
-    console.log(`Loading: ${percent.toFixed(1)}%`);
-  },
+  undefined,
   (error) => {
-    console.error('Error loading model:', error);
+    console.error('Error loading low-poly model:', error);
+    // Fallback: load high-poly directly
+    loader.load('/model/flower.glb', (gltf) => {
+      flowerModel = gltf.scene;
+      flowerGroup.add(flowerModel);
+      setupModel(flowerModel);
+    });
   }
 );
 
