@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Resume - Kate Bondarenko</title>
+    <link rel="icon" type="image/png" href="/public/icon.png" />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html, body {
+        height: 100%;
+        overflow: hidden;
+      }
+      body {
+        background: #1a1a2e;
+        font-family: Didot, "Didot LT STD", "Hoefler Text", Garamond, "Times New Roman", serif;
+        color: rgba(255, 255, 255, 0.9);
+        display: flex;
+      }
+      .pdf-container {
+        flex: 1;
+        padding: 20px;
+        padding-right: 10px;
+      }
+      .pdf-wrapper {
+        width: 100%;
+        height: 100%;
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+      }
+      embed {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      .sidebar {
+        width: 200px;
+        padding: 30px 30px 30px 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+      .top-section {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 16px;
+      }
+      h1 {
+        font-size: 28px;
+        font-weight: normal;
+      }
+      .download-link {
+        color: rgba(255, 255, 255, 0.7);
+        text-decoration: none;
+        padding: 10px 16px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 8px;
+        transition: all 0.2s;
+        text-align: center;
+      }
+      .download-link:hover {
+        color: rgba(255, 255, 255, 1);
+        border-color: rgba(255, 255, 255, 0.6);
+        background: rgba(255, 255, 255, 0.05);
+      }
+      .back-link {
+        color: rgba(255, 255, 255, 0.7);
+        text-decoration: none;
+        transition: color 0.2s;
+        text-align: right;
+      }
+      .back-link:hover {
+        color: rgba(255, 255, 255, 1);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="pdf-container">
+      <div class="pdf-wrapper">
+        <embed src="/public/resume.pdf#navpanes=0&zoom=100" type="application/pdf" />
+      </div>
+    </div>
+    <aside class="sidebar">
+      <div class="top-section">
+        <h1>Resume</h1>
+        <a href="/public/resume.pdf" download class="download-link">Download PDF</a>
+      </div>
+      <a href="/" class="back-link">&larr; Back to flower</a>
+    </aside>
+  </body>
+</html>

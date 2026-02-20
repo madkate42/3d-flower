@@ -15,10 +15,10 @@ import {
 // Optional: lineUp (true = line goes up, false = down), lineAngle (degrees, default 45)
 const BUTTONS = [
   { id: 'btn1', position: [1.3, -0.2, -0.07], url: 'https://example.com/1', label: 'About' },
-  { id: 'btn2', position: [-1.5, 0.8, -0.75], url: 'https://example.com/2', label: 'Projects' },
+  { id: 'btn2', position: [-1.5, 0.8, -0.75], url: '/projects', label: 'Projects' },
   { id: 'btn3', position: [0.45, 1.8, 0.44], url: 'https://example.com/3', label: 'Contact', lineUp: true },
   { id: 'btn4', position: [-0.3, 0, 1.65], url: 'https://github.com/madkate42', label: 'GitHub' },
-  { id: 'btn5', position: [-0.35, 0.55, 1.25], url: 'https://example.com/4', label: 'Resume', lineUp: true },
+  { id: 'btn5', position: [-0.35, 0.55, 1.25], url: '/resume', label: 'Resume', lineUp: true },
   { id: 'btn6', position: [1, 1.4, 0.87], url: 'https://www.linkedin.com/in/kbondarenko42/', label: 'LinkedIn', lineUp: true },
 ];
 
@@ -188,6 +188,38 @@ function onMouseMove(event) {
   }
 }
 
+// Overlay handling
+const overlays = {
+  '/projects': document.getElementById('overlay-projects'),
+  '/resume': document.getElementById('overlay-resume'),
+};
+
+function openOverlay(url) {
+  const overlay = overlays[url];
+  if (overlay) {
+    overlay.classList.add('active');
+    // Load PDF only when resume overlay opens
+    if (url === '/resume') {
+      const embed = document.getElementById('resume-embed');
+      if (!embed.src || embed.src === window.location.href) {
+        embed.src = '/public/resume.pdf#navpanes=0&zoom=100';
+      }
+    }
+  }
+}
+
+function closeOverlay(overlay) {
+  overlay.classList.remove('active');
+}
+
+// Close button handlers
+document.querySelectorAll('[data-close]').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    const overlay = btn.closest('.overlay');
+    if (overlay) closeOverlay(overlay);
+  });
+});
+
 // Click handler
 function onClick(event) {
   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
@@ -204,8 +236,17 @@ function onClick(event) {
     if (associatedButton) {
       console.log('Clicked:', associatedButton.userData.id, associatedButton.userData.label);
 
-      if (associatedButton.userData.url) {
-        window.open(associatedButton.userData.url, '_blank');
+      const url = associatedButton.userData.url;
+      if (url) {
+        // Check if it's an overlay route
+        if (overlays[url]) {
+          openOverlay(url);
+        } else if (url.startsWith('http')) {
+          // External links open in new tab
+          window.open(url, '_blank');
+        } else {
+          window.location.href = url;
+        }
       }
     }
   }
