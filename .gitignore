@@ -1,4 +1,5 @@
 node_modules
+dist
 public/model/flower.glb
 .vercel
 .env*.local
