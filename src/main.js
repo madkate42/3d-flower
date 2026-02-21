@@ -309,7 +309,7 @@ function openOverlay(url) {
     if (url === '/resume') {
       const embed = document.getElementById('resume-embed');
       if (!embed.src || embed.src === window.location.href) {
-        embed.src = '/public/resume.pdf#navpanes=0&zoom=100';
+        embed.src = '/resume.pdf#navpanes=0&zoom=100';
       }
     }
   }
