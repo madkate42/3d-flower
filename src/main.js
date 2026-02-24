@@ -15,7 +15,7 @@ import {
 // Adjust positions to place buttons on your flower petals
 // Optional: lineUp (true = line goes up, false = down), lineAngle (degrees, default 45)
 const BUTTONS = [
-  { id: 'btn1', position: [1.3, -0.2, -0.07], url: 'https://example.com/1', label: 'About' },
+  { id: 'btn1', position: [1.3, -0.2, -0.07], url: '/about', label: 'About' },
   { id: 'btn2', position: [-1.5, 0.8, -0.75], url: '/projects', label: 'Projects' },
   { id: 'btn3', position: [0.45, 1.8, 0.44], url: 'https://example.com/3', label: 'Contact', lineUp: true },
   { id: 'btn4', position: [-0.3, 0, 1.65], url: 'https://github.com/madkate42', label: 'GitHub' },
@@ -299,6 +299,7 @@ function onMouseMove(event) {
 const overlays = {
   '/projects': document.getElementById('overlay-projects'),
   '/resume': document.getElementById('overlay-resume'),
+  '/about': document.getElementById('overlay-about'),
 };
 
 function openOverlay(url) {
